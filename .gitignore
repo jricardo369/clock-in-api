@@ -1,0 +1,11 @@
+# Archivos y carpetas no incluidos
+.classpath
+.project
+.DS_Store
+#/build/
+#/bin/
+.scannerwork/
+sonar-project.properties
+/.settings/
+/target/
+/bin/
