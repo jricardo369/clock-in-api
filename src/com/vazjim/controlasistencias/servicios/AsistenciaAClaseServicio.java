@@ -4,14 +4,14 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 
@@ -181,6 +181,7 @@ public class AsistenciaAClaseServicio {
 					return MensajeLogica.obtenerMensajeCompletoConParametros("ASISCLASE-FUERAHORARIO-A", "ES",
 							c.getNombre(), "", "", "");
 				}
+				
 			} else if (compFechas == -1) {
 				return MensajeLogica.obtenerMensajeCompleto("ASISCLASE-FECHAANTERIOR", "ES");
 			}
@@ -479,6 +480,102 @@ public class AsistenciaAClaseServicio {
 
 	}
 
+	@GET
+	@Path("/validar-eliminar-asistencia")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String validarBajaAsistencia(@QueryParam("fecha") String fecha,@QueryParam("horaInicio") String horaInicio,@QueryParam("horarioClase") String horarioClase,
+			@QueryParam("idClase") int idClase)
+			throws ParseException {
+
+		StringBuilder salida = new StringBuilder();
+		AsistenciaAClaseLogica al = new AsistenciaAClaseLogica();
+		Clase c = null;
+
+		salida.append("-------------------------\n");
+		salida.append("VALIDANDO CON FECHA Y HORARIOS ENVIADOS\n");
+		salida.append("fecha:"+fecha +"\n");
+		salida.append("horaInicio:"+horaInicio +"\n");
+		salida.append("horarioClase:"+horarioClase +"\n");
+
+		boolean horarioFueraDeClase = false;
+		boolean horarioFueraPorFalta = false;
+		String hora = "";
+		String horaYMin = "";
+		//hora = "5";
+		try {
+			hora = Utilidades.generarFecha(false, true, false, "", 0, "2025-10-05").substring(0, 2);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		salida.append("Validar si ya paso el horario de la clase\n");
+		c = new Clase();
+		c.setHoraInicio(horaInicio);
+		c.setHorario(horarioClase);		
+		c.setNombre("Clase prueba");
+		horarioFueraDeClase = al.horarioFueraDeClase(hora, c.getHoraInicio(), c.getHorario());
+
+		if (horarioFueraDeClase) {
+
+			log.info("Clase fuera de horario");
+			salida.append("Error:"+MensajeLogica.obtenerMensajeDesc("ASISCLASE-FUERAHORARIO-A", "ES")+"\n");
+
+		}else{
+
+			salida.append("Horario dentro de clase\n");
+
+		}
+
+		salida.append("Hora obtenida:" + hora + "\n");
+		horarioFueraPorFalta = al.horarioParaValFaltaV2(hora, horaInicio, horarioClase);		
+		
+		System.out.println("Horario fuera de clase:"+horarioFueraPorFalta);
+		salida.append("Horario fuera de clase:"+horarioFueraPorFalta+"\n");
+
+		salida.append("-------------------------\n");
+		salida.append("VALIDANDO POR ID CLASE\n");
+		
+		ClaseLogica logicaCl = new ClaseLogica();
+
+		try {
+			
+			c = new Clase();
+			c = logicaCl.obtenerClase("id_clase", String.valueOf(idClase),1,true);
+			if (c == null) {
+				return MensajeLogica.obtenerMensajeCompleto("CLASES-NOXISTE", "ES");
+			}		
+			
+			String horaYmin = Utilidades.generarFecha(false, true, false, "", 0, fecha).substring(0, 5);
+			
+			salida.append("idClase:"+idClase +"\n");
+			salida.append("Clase:"+c.getNombre() +"\n");
+			salida.append("horaInicio:"+c.getHoraInicio() +"\n");
+			salida.append("horarioClase:"+c.getHorario() +"\n");
+			salida.append("horario:"+c.getHorario() +"\n");
+			salida.append("Hora y min obt:"+horaYmin +"\n");
+			
+			horarioFueraDeClase = al.horarioFueraDeClase(hora, c.getHoraInicio(), c.getHorario());
+
+			if (horarioFueraDeClase) {
+				log.info("Clase fuera de horario");
+				salida.append("Error:"+MensajeLogica.obtenerMensajeDesc("ASISCLASE-FUERAHORARIO-A", "ES"));
+			}	
+		
+			horarioFueraPorFalta = al.horarioParaValFaltaV2(hora, horaInicio, horarioClase);		
+			
+			salida.append("Horario fuera de clase:"+horarioFueraPorFalta);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return salida.toString();
+
+		
+
+	}
+
+
 	public static void main(String args[]) throws SQLException {
 		AsistenciaAClaseLogica al = new AsistenciaAClaseLogica();
 		
@@ -486,9 +583,9 @@ public class AsistenciaAClaseServicio {
 		try {
 			boolean horarioFueraDeClase = false;
 			String hora;
-			hora = Utilidades.generarFecha(false, true, false, "", 0, "2023-07-21").substring(0, 2);
-			String horaInicio = "8";
-			String horarioClase = "V";
+			hora = Utilidades.generarFecha(false, true, false, "", 0, "2026-01-03").substring(0, 2);
+			String horaInicio = "13";
+			String horarioClase = "";
 			log.info("Hora:" + hora);
 			log.info("Hora Inicio:" + horaInicio);
 			

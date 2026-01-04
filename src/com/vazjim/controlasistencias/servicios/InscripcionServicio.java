@@ -3,25 +3,22 @@ package com.vazjim.controlasistencias.servicios;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
-import org.apache.log4j.Logger;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.vazjim.controlasistencias.logica.AsistenciaMultaLogica;
 import com.vazjim.controlasistencias.logica.ConfiguracionLogica;
 import com.vazjim.controlasistencias.logica.InscripcionLogica;
 import com.vazjim.controlasistencias.logica.LogLogica;
@@ -32,10 +29,14 @@ import com.vazjim.controlasistencias.modelo.Configuracion;
 import com.vazjim.controlasistencias.modelo.Inscripcion;
 import com.vazjim.controlasistencias.utilidades.Utilidades;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Path("Inscripciones")
 public class InscripcionServicio {
 
-	private static Logger log = Logger.getLogger(InscripcionServicio.class);
+	private static final Logger log = LoggerFactory.getLogger(InscripcionServicio.class);
 
 	String json = "";
 

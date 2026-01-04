@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
@@ -30,9 +31,13 @@ import com.vazjim.controlasistencias.modelo.LugaresClase;
 import com.vazjim.controlasistencias.modelo.LugaresClaseSeccionado;
 import com.vazjim.controlasistencias.modelo.Mensaje;
 import com.vazjim.controlasistencias.modelo.Usuario;
+import com.vazjim.controlasistencias.utilidades.Propiedades;
 import com.vazjim.controlasistencias.utilidades.Utilidades;
 
 public class AsistenciaAClaseLogica {
+
+	public static Propiedades p = new Propiedades();
+	public static Properties prop = p.getProperties();
 
 	private static Logger log = Logger.getLogger(AsistenciaAClaseLogica.class);
 
@@ -1282,73 +1287,116 @@ public class AsistenciaAClaseLogica {
 
 	public LugaresClaseSeccionado lugaresClase(int idClase, String fecha) {
 
+		String compania = prop.getProperty("compania");
+		System.out.println("compania:" + compania+" | idClase:"+idClase+" | fecha:"+fecha);
+
 		LugaresClaseSeccionado lcs = new LugaresClaseSeccionado();
-		List<LugaresClase> listLugares = new ArrayList<>();
-		List<LugaresClase> listLugares2 = new ArrayList<>();
-		List<LugaresClase> listLugares3 = new ArrayList<>();
-		List<LugaresClase> listLugares4 = new ArrayList<>();
-		List<LugaresClase> listLugares5 = new ArrayList<>();
 
 		try {
 
-			ClaseLogica cl = new ClaseLogica();
-			Clase c = cl.obtenerClase("id_clase", "" + idClase, 0,true);
 			List<String> lugaresUsados = obtenerLugaresUsados(idClase, fecha);
-			System.out.println("personas:" + c.getPersonas());
-			boolean encontro = false;
-			for (int i = 1; i < Integer.valueOf(c.getPersonas()) + 4; i++) {
-				String l = "" + i;
-				//System.out.println("Lugar:" + l);
-				for (String s : lugaresUsados) {
-					System.out.println("s:" + s + " es igual a" + ":" + l);
-					if (s.equals(l)) {
-						System.out.println("Se econtro lugar:" + i);
-						encontro = true;
-						break;
+			System.out.println("lugaresUsados:" + lugaresUsados.size());
+
+
+			if (compania.equals("iroda")) {
+
+				List<LugaresClase> listLugares = new ArrayList<>();
+				List<LugaresClase> listLugares2 = new ArrayList<>();
+				List<LugaresClase> listLugares3 = new ArrayList<>();
+				List<LugaresClase> listLugares4 = new ArrayList<>();
+				List<LugaresClase> listLugares5 = new ArrayList<>();
+
+				ClaseLogica cl = new ClaseLogica();
+				Clase c = cl.obtenerClase("id_clase", "" + idClase, 0, true);
+
+				System.out.println("personas:" + c.getPersonas());
+				boolean encontro = false;
+				for (int i = 1; i < Integer.valueOf(c.getPersonas()) + 4; i++) {
+					String l = "" + i;
+					// System.out.println("Lugar:" + l);
+					for (String s : lugaresUsados) {
+						System.out.println("s:" + s + " es igual a" + ":" + l);
+						if (s.equals(l)) {
+							System.out.println("Se econtro lugar:" + i);
+							encontro = true;
+							break;
+						}
 					}
+
+					LugaresClase lg = new LugaresClase();
+					lg.setNumero(i);
+					if (encontro) {
+						lg.setSeleccionado(true);
+					} else {
+						lg.setSeleccionado(false);
+					}
+					if (i <= 4) {
+						listLugares.add(lg);
+					}
+
+					if ((i >= 5) && (i <= 8)) {
+						listLugares2.add(lg);
+					}
+
+					if ((i >= 9) && (i <= 12)) {
+						listLugares3.add(lg);
+					}
+
+					if ((i >= 13) && (i <= 16)) {
+						listLugares4.add(lg);
+					}
+
+					if ((i >= 17) && (i <= 21)) {
+						listLugares5.add(lg);
+					}
+
+					encontro = false;
+
+					lcs.setL1(listLugares);
+					lcs.setL2(listLugares2);
+					lcs.setL3(listLugares3);
+					lcs.setL4(listLugares4);
+					Collections.reverse(listLugares5);
+					lcs.setL5(listLugares5);
+
 				}
 
-				LugaresClase lg = new LugaresClase();
-				lg.setNumero(i);
-				if (encontro) {
-					lg.setSeleccionado(true);
-				} else {
-					lg.setSeleccionado(false);
-				}
-				if (i <= 4) {
+			}else if(compania.equals("lua")) {
+
+				List<LugaresClase> listLugares = new ArrayList<>();
+
+				ClaseLogica cl = new ClaseLogica();
+				Clase c = cl.obtenerClase("id_clase", "" + idClase, 0, true);
+
+				System.out.println("personas:" + c.getPersonas());
+				boolean encontro = false;
+				for (int i = 1; i < Integer.valueOf(c.getPersonas())+1; i++) {
+
+					String l = "" + i;
+					System.out.println("Lugar:" + l);
+					encontro = lugaresUsados.stream().anyMatch(lugar -> lugar.equals(l));
+					System.out.println("encontro:" + encontro);
+
+					LugaresClase lg = new LugaresClase();
+					lg.setNumero(i);
+					if (encontro) {
+						lg.setSeleccionado(true);
+					} else {
+						lg.setSeleccionado(false);
+					}
 					listLugares.add(lg);
-				}
 
-				if ((i >= 5) && (i <= 8)) {
-					listLugares2.add(lg);
-				}
+					encontro = false;
 
-				if ((i >= 9) && (i <= 12)) {
-					listLugares3.add(lg);
-				}
+					lcs.setL1(listLugares);
 
-				if ((i >= 13) && (i <= 16)) {
-					listLugares4.add(lg);
 				}
-
-				if ((i >= 17) && (i <= 21)) {
-					listLugares5.add(lg);
-				}
-
-				encontro = false;
 
 			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
-		lcs.setL1(listLugares);
-		lcs.setL2(listLugares2);
-		lcs.setL3(listLugares3);
-		lcs.setL4(listLugares4);
-		Collections.reverse(listLugares5);
-		lcs.setL5(listLugares5);
 
 		return lcs;
 	}

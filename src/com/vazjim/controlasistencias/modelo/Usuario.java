@@ -30,6 +30,7 @@ public class Usuario {
 	private String asistio;
 	private String mensaje;
 	private String terminos;
+	private String fechaNacimiento;
 	
 	public int getIdUsuario() {
 		return idUsuario;
@@ -198,6 +199,13 @@ public class Usuario {
 	}
 	public void setTerminos(String terminos) {
 		this.terminos = terminos;
+	}
+
+	public String getFechaNacimiento() {
+		return fechaNacimiento;
+	}
+	public void setFechaNacimiento(String fechaNacimiento) {
+		this.fechaNacimiento = fechaNacimiento;
 	}
 		
 }

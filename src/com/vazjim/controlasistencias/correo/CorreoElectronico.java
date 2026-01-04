@@ -5,31 +5,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vazjim.controlasistencias.utilidades.Propiedades;
 
+
 public class CorreoElectronico {
+	// Usar el singleton de Propiedades para acceder a config.properties
+	private static final Properties prop = Propiedades.getConfigProperties();
 
-	public static Propiedades p = new Propiedades();
-	public static Properties prop = p.getProperties();
-
-	private static Logger log = Logger.getLogger(CorreoElectronico.class);
+	private static final Logger log = LoggerFactory.getLogger(CorreoElectronico.class);
 
 	private String cabecera;
 	private String mensaje;
@@ -67,7 +68,6 @@ public class CorreoElectronico {
 	}
 
 	public void envioCorreoElectronico() {
-
 		final String correoEnvio = prop.getProperty("correo");
 		final String correoEnvioPass = prop.getProperty("correo_pass");
 
@@ -78,45 +78,36 @@ public class CorreoElectronico {
 		p.put("mail.smtp.socketFactory.port", "465");
 		p.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 
-		Session session = Session.getInstance(p, new javax.mail.Authenticator() {
+		Session session = Session.getInstance(p, new jakarta.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(correoEnvio, correoEnvioPass);
 			}
 		});
 
 		try {
-
 			String correo = getEmail();
 			String cabecera = getCabecera();
 			String mensaje = getMensaje();
-			
-			InternetAddress[] parse = InternetAddress.parse(correo , true);
+
+			InternetAddress[] parse = InternetAddress.parse(correo, true);
 
 			Message message = new MimeMessage(session);
-			message.setRecipients(javax.mail.Message.RecipientType.TO,  parse);
+			message.setRecipients(jakarta.mail.Message.RecipientType.TO, parse);
 
 			message.setSubject(cabecera);
 			message.setText("Dear Mail Crawler," + "\n\n Please do not spam my email!");
 
 			if (archivo == null) {
-
 				log.debug("Correo sin archivo adjunto");
-
 				message.setContent(mensaje, "text/html");
-
 			} else {
-
 				log.debug("Correo con archivo adjunto");
-
 				BodyPart messageBodyPart = new MimeBodyPart();
 				BodyPart messageBodyPart2 = new MimeBodyPart();
 				Multipart multipart = new MimeMultipart();
 
 				// Agregar los datos adjuntos
-				DataSource source = null;
-
-				source = new ByteArrayDataSource(this.archivo, "application/" + this.tipoArchivo);
-
+				DataSource source = new ByteArrayDataSource(this.archivo, "application/" + this.tipoArchivo);
 				messageBodyPart.setDataHandler(new DataHandler(source));
 				messageBodyPart.setFileName(nombreArchivo);
 
@@ -125,15 +116,12 @@ public class CorreoElectronico {
 				multipart.addBodyPart(messageBodyPart2);
 
 				message.setContent(multipart);
-
 			}
 
 			Transport.send(message);
-
 			log.debug("Enviado!");
-
 		} catch (MessagingException e) {
-			e.printStackTrace();
+			log.error("Excepción al enviar correo electrónico", e);
 		}
 	}
 

@@ -8,7 +8,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vazjim.controlasistencias.conexion.Conexion;
 import com.vazjim.controlasistencias.modelo.Clase;
@@ -19,7 +20,7 @@ import com.vazjim.controlasistencias.utilidades.Utilidades;
 
 public class ClaseLogica {
 
-	private static Logger log = Logger.getLogger(ClaseLogica.class);
+	private static final Logger log = LoggerFactory.getLogger(ClaseLogica.class);
 
 	public List<Clase> obtenerClases(String columna, String valor, int sociedad,boolean activas,boolean conLugares) throws SQLException {
 
@@ -64,7 +65,7 @@ public class ClaseLogica {
 			querySql += where;
 		}
 
-		System.out.println("query:" + querySql);
+	log.info("query: {}", querySql);
 
 		try {
 
@@ -172,7 +173,7 @@ public class ClaseLogica {
 		+ "FROM clase c "
 		+ "JOIN usuario u ON u.id_usuario = c.profesor "
 		+ "WHERE NOT EXISTS (select a.id_clase from asueto a where a.id_clase = c.id_clase and a.fecha IN (?)) "
-		+ "AND c.estatus = '1' AND c.dia = ?";
+		+ "AND c.estatus = '1' AND c.dia = ? ORDER BY horario ASC,hora_inicio ASC ";
 		
 		if (sociedad != 0 && !"".equals(sociedad)) {
 			if (!querySql.equals(""))
@@ -188,7 +189,7 @@ public class ClaseLogica {
 		
 		
 
-		System.out.println("query:" + querySql);
+	log.info("query: {}", querySql);
 
 		try {
 
@@ -321,13 +322,13 @@ public class ClaseLogica {
 				hora = Utilidades.generarFecha(false, true, false, "", 0, fecha).substring(0, 2);
 				horarioFueraDeClase = acl.horarioFueraDeClase(hora, clase.getHoraInicio(), clase.getHorario());
 
-				System.out.println("clase:"+clase.getDescCorta());
+				log.info("clase: {}", clase.getDescCorta());
 				if (horarioFueraDeClase) {
-					System.out.println("Asistencia:"+clase.getAsistencia());
+					log.info("Asistencia: {}", clase.getAsistencia());
 					
 					if (idUsuario != 0) {
 						String fec = Utilidades.generarFecha(true, false, false, "", 0, fecha);
-						System.out.println("fecha entrada:"+fec);
+						log.info("fecha entrada: {}", fec);
 						int c = Utilidades.compararFechaActualVsFecha(fec);
 						if (c==0) {
 							valido = false;
@@ -393,7 +394,7 @@ public class ClaseLogica {
 		
 		
 		} catch (ParseException e) {
-			e.printStackTrace();
+		log.error("Excepción capturada", e);
 		}
 		
 		if (idUsuario != 0) {

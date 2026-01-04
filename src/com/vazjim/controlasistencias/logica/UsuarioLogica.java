@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vazjim.controlasistencias.conexion.Conexion;
 import com.vazjim.controlasistencias.modelo.Inscripcion;
@@ -22,7 +23,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 public class UsuarioLogica {
 
-	private static Logger log = Logger.getLogger(UsuarioLogica.class);
+	private static final Logger log = LoggerFactory.getLogger(AsistenciaMultaLogica.class);
 	public static Propiedades p = new Propiedades();
 	public static Properties prop = p.getProperties();
 
@@ -41,7 +42,7 @@ public class UsuarioLogica {
 		List<Usuario> usuarios = new ArrayList<>();
 		Usuario usuario;
 
-		querySql = "SELECT id_usuario,id_rol,usuario,contrasenia,nombre,sexo,correo_electronico,peso,altura,imc,telefono,nivel,estatus,intentos,total_multas,contador_faltas,sociedad,terminos FROM usuario ";
+		querySql = "SELECT id_usuario,id_rol,usuario,contrasenia,nombre,sexo,correo_electronico,peso,altura,imc,telefono,nivel,estatus,intentos,total_multas,contador_faltas,sociedad,terminos,fecha_nacimiento FROM usuario ";
 
 		String where = "";
 		
@@ -96,6 +97,8 @@ public class UsuarioLogica {
 				usuario.setContadorFaltas(rs.getInt(16));
 				usuario.setSociedad(rs.getInt(17));
 				usuario.setTerminos(rs.getString(18));
+				usuario.setFechaNacimiento(rs.getString(19) != null ? rs.getString(19) : "");
+
 				if (rs.getInt(2) == 2) { 
 					Inscripcion insc = ins.obtenerUlimaInscripcionDeUsuario(usuario.getIdUsuario());
 					if (insc != null) {
@@ -223,7 +226,7 @@ public class UsuarioLogica {
 		String querySql;
 		Connection conn = Conexion.getConnectionDbPool();
 
-		querySql = "UPDATE usuario " + "SET id_rol = ?, usuario = ?, contrasenia = ?, nombre = ?, sexo = ?, correo_electronico = ?, " + "peso = ?,altura = ?,imc = ?,telefono = ?,nivel = ?,estatus = ?,intentos = ? " + "WHERE id_usuario = ?";
+		querySql = "UPDATE usuario " + "SET id_rol = ?, usuario = ?, contrasenia = ?, nombre = ?, sexo = ?, correo_electronico = ?, " + "peso = ?,altura = ?,imc = ?,telefono = ?,nivel = ?,estatus = ?,intentos = ?,fecha_nacimiento = ? " + "WHERE id_usuario = ?";
 
 		try {
 			conn.setAutoCommit(false);
@@ -243,7 +246,8 @@ public class UsuarioLogica {
 			st.setString(11, usuario.getNivel());
 			st.setString(12, "1");
 			st.setInt(13, 0);
-			st.setInt(14, usuario.getIdUsuario());
+			st.setString(14, usuario.getFechaNacimiento());
+			st.setInt(15, usuario.getIdUsuario());
 
 			st.executeUpdate();
 			conn.commit();
@@ -278,7 +282,7 @@ public class UsuarioLogica {
 		String querySql;
 		Connection conn = Conexion.getConnectionDbPool();
 
-		querySql = "UPDATE usuario SET correo_electronico = ?,telefono = ? WHERE id_usuario = ?";
+		querySql = "UPDATE usuario SET correo_electronico = ?,telefono = ?,fecha_nacimiento = ? WHERE id_usuario = ?";
 
 		try {
 			conn.setAutoCommit(false);
@@ -286,7 +290,8 @@ public class UsuarioLogica {
 
 			st.setString(1, usuario.getCorreoElectronico());
 			st.setString(2, usuario.getTelefono());
-			st.setInt(3, usuario.getIdUsuario());
+			st.setString(3, usuario.getFechaNacimiento());
+			st.setInt(4, usuario.getIdUsuario());
 
 			st.executeUpdate();
 			conn.commit();

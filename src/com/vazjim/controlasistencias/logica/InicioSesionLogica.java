@@ -81,7 +81,8 @@ public class InicioSesionLogica {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			// Asegúrate de tener un logger en esta clase
+			org.slf4j.LoggerFactory.getLogger(InicioSesionLogica.class).error("Excepción capturada", e);
 			throw new SQLException();
 		} finally {
 

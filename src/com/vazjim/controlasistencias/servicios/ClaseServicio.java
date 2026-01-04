@@ -3,17 +3,18 @@ package com.vazjim.controlasistencias.servicios;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,7 +29,7 @@ import com.vazjim.controlasistencias.utilidades.Utilidades;
 @Path("Clases")
 public class ClaseServicio {
 
-	private static Logger log = Logger.getLogger(ClaseServicio.class);
+	private static final Logger log = LoggerFactory.getLogger(ClaseServicio.class);
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -38,6 +39,7 @@ public class ClaseServicio {
 		List<Clase> asistenciaAClase = null;
 		try {
 			asistenciaAClase = logica.obtenerClases(null, null,sociedad,false,false);
+			log.info("asistenciaAClase:{}", asistenciaAClase.size());
 			return MensajeLogica.obtenerMensajeCompletoConRespuesta("", "",asistenciaAClase);
 		} catch (SQLException e) {
 			return MensajeLogica.errorBD(e);
@@ -104,7 +106,7 @@ public class ClaseServicio {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String obtenerClasesDeFechaYUsuario(@PathParam("fecha") String fecha,@PathParam("idUsuario") int idUsuario,@QueryParam("sociedad")int sociedad) {
 
-		log.info("Clases por fecha");
+		log.info("Clases por fecha usuario");
 		boolean esAsuetoGeneral = false;
 
 		ClaseLogica logica = new ClaseLogica();

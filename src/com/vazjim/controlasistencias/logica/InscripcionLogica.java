@@ -7,8 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.vazjim.controlasistencias.conexion.Conexion;
 import com.vazjim.controlasistencias.modelo.Mensaje;
 import com.vazjim.controlasistencias.modelo.TipoInscripcion;
@@ -17,9 +15,12 @@ import com.vazjim.controlasistencias.modelo.Configuracion;
 import com.vazjim.controlasistencias.modelo.Inscripcion;
 import com.vazjim.controlasistencias.utilidades.Utilidades;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class InscripcionLogica {
 	
-	private static Logger log = Logger.getLogger(InscripcionLogica.class);
+	private static final Logger log = LoggerFactory.getLogger(InscripcionLogica.class);
 
 	static Utilidades util = new Utilidades();
 

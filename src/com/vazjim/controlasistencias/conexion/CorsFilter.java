@@ -3,16 +3,17 @@ package com.vazjim.controlasistencias.conexion;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vazjim.controlasistencias.utilidades.Propiedades;
 
@@ -20,7 +21,7 @@ import io.jsonwebtoken.Jwts;
 
 public class CorsFilter implements Filter {
 	
-	private static Logger log = Logger.getLogger(CorsFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(CorsFilter.class);
 
 	boolean validarToken = false;
 	public static Propiedades p = new Propiedades();
@@ -40,16 +41,16 @@ public class CorsFilter implements Filter {
 		log.info("CORSFilter HTTP Request: " + request.getMethod());
 
 		// Authorize (allow) all domains to consume the content
-		((HttpServletResponse) servletResponse).addHeader("Access-Control-Allow-Origin", "*");
-		((HttpServletResponse) servletResponse).addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, HEAD, PUT, POST, DELETE");
-		((HttpServletResponse) servletResponse).addHeader("Access-Control-Allow-Headers", "*");
+		HttpServletResponse response = (HttpServletResponse) servletResponse;
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+		response.setHeader("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Requested-With");
+		response.setHeader("Access-Control-Allow-Credentials", "true");
+		response.setHeader("Access-Control-Max-Age", "3600");
 
-		HttpServletResponse resp = (HttpServletResponse) servletResponse;
-
-		// For HTTP OPTIONS verb/method reply with ACCEPTED status code -- per
-		// CORS handshake
+		// For HTTP OPTIONS verb/method reply with OK status code -- per CORS handshake
 		if (request.getMethod().equals("OPTIONS")) {
-			resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+			response.setStatus(HttpServletResponse.SC_OK);
 			return;
 		}
 
@@ -66,15 +67,14 @@ public class CorsFilter implements Filter {
 					log.info("TOKEN:" + token);
 				}
 
-				if (validarToken(token)) {
+				if (validarToken(token)) {	
 					chain.doFilter(request, servletResponse);
 				} else {
 					log.info("Error");
 					String url = "http://" + request.getContextPath() + request.getRequestURI();
-					resp = (HttpServletResponse) servletResponse;
-					resp.reset();
-					resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-					resp.setHeader("Location", url);
+					response.reset();
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					response.setHeader("Location", url);
 				}
 			} else {
 				chain.doFilter(request, servletResponse);

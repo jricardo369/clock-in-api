@@ -1,5 +1,9 @@
 package com.vazjim.controlasistencias.logica;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +17,8 @@ import com.vazjim.controlasistencias.modelo.Mensaje;
 import com.vazjim.controlasistencias.utilidades.Utilidades;
 
 public class AsistenciaMultaLogica {
+
+	private static final Logger log = LoggerFactory.getLogger(AsistenciaMultaLogica.class);
 
 	public String agregarUsuarioAAsistenciaMulta(int idUsuario, int idClase, String fecha, String lugar)
 			throws SQLException {
@@ -80,7 +86,7 @@ public class AsistenciaMultaLogica {
 				+ "JOIN usuario u ON u.id_usuario = c.profesor "
 				+ "WHERE a.id_usuario = ? and fecha <= ? order by fecha desc limit 30";
 
-		System.out.println("query:" + querySql);
+	log.info("query: {}", querySql);
 
 		try {
 
@@ -120,7 +126,7 @@ public class AsistenciaMultaLogica {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+		log.error("Excepción capturada", e);
 			throw new SQLException();
 		} finally {
 

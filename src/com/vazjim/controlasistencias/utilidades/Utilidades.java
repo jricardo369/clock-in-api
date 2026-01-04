@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
@@ -40,13 +39,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.vazjim.controlasistencias.logica.AsistenciaMultaLogica;
 import com.vazjim.controlasistencias.logica.ConfiguracionLogica;
 import com.vazjim.controlasistencias.logica.UsuarioLogica;
 import com.vazjim.controlasistencias.modelo.Configuracion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Utilidades {
 
-	private static Logger log = Logger.getLogger(Utilidades.class);
+	private static final Logger log = LoggerFactory.getLogger(Utilidades.class);
 
 	public String isJSONValid(String json) {
 
@@ -330,7 +333,7 @@ public class Utilidades {
 	}
 
 	public static String fechaEnLetra(String fecha) {
-		log.info("Fecha:" + fecha);
+		//log.info("Fecha:" + fecha);
 		String dia = "";
 		String salida = "";
 		try {
@@ -340,7 +343,7 @@ public class Utilidades {
 			c.setTime(simpleDateFormat.parse(fecha));
 
 			int diaFecha = c.get(Calendar.DAY_OF_WEEK);
-			log.info("Día:" + diaFecha);
+			//log.info("Día:" + diaFecha);
 
 			if (diaFecha == 2) {
 				dia = "Lunes";
@@ -365,7 +368,7 @@ public class Utilidades {
 			}
 
 			String mes = fecha.substring(5, 7);
-			log.info("Mes:" + mes);
+			//log.info("Mes:" + mes);
 			switch (mes) {
 			case "01":
 				mes = "Enero";
