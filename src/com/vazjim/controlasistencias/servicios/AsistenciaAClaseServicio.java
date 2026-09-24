@@ -42,7 +42,7 @@ public class AsistenciaAClaseServicio {
 	public String obtenerAsistenciaDeUsuarios(@PathParam("idClase") int idClase, @QueryParam("fecha") String fecha,@QueryParam("sociedad") int sociedad)
 			throws ParseException {
 
-		log.info("Otener asistencia a clase " + idClase + " de fecha " + fecha);
+		log.info("Obtener asistencia a clase " + idClase + " de fecha " + fecha);
 		AsistenciaAClaseLogica logica = new AsistenciaAClaseLogica();
 		AsistenciaAClase asistenciaAClase = null;
 		if (sociedad == 0) {
@@ -238,6 +238,7 @@ public class AsistenciaAClaseServicio {
 		}
 
 		String asistenciaAClase = "";
+		
 		try {
 
 			// Buscar clase
@@ -249,6 +250,7 @@ public class AsistenciaAClaseServicio {
 
 			// Tomando usuario
 			List<Usuario> usuario = logicaUs.obtener("id_usuario", String.valueOf(idUsuario),sociedad,false);
+			
 			// Validando que exista el usuario
 			log.info("--- Validando que usuario exista");
 			if (usuario.isEmpty()) {
@@ -500,7 +502,6 @@ public class AsistenciaAClaseServicio {
 		boolean horarioFueraDeClase = false;
 		boolean horarioFueraPorFalta = false;
 		String hora = "";
-		String horaYMin = "";
 		//hora = "5";
 		try {
 			hora = Utilidades.generarFecha(false, true, false, "", 0, "2025-10-05").substring(0, 2);
@@ -518,7 +519,7 @@ public class AsistenciaAClaseServicio {
 		if (horarioFueraDeClase) {
 
 			log.info("Clase fuera de horario");
-			salida.append("Error:"+MensajeLogica.obtenerMensajeDesc("ASISCLASE-FUERAHORARIO-A", "ES")+"\n");
+			salida.append("Error:"+MensajeLogica.obtenerMensajeDesc("ASISCLASE-FUERAHORARIO-E", "ES")+"\n");
 
 		}else{
 

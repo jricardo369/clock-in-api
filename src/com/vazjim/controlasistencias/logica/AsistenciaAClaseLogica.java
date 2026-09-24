@@ -153,7 +153,7 @@ public class AsistenciaAClaseLogica {
 
 	}
 
-	public AsistenciaAClase obtenerAsistenciaAClase(int idClase, String fecha, int sociedad) throws SQLException {
+	/*public AsistenciaAClase obtenerAsistenciaAClase(int idClase, String fecha, int sociedad) throws SQLException {
 
 		Connection conn = Conexion.getConnectionDbPool();
 
@@ -283,6 +283,95 @@ public class AsistenciaAClaseLogica {
 		}
 
 		return asistenciaClase;
+	}*/
+	
+	public AsistenciaAClase obtenerAsistenciaAClase(int idClase, String fecha, int sociedad) throws SQLException {
+		
+	    String sql = """
+	        SELECT 
+	            u.id_usuario,
+	            u.usuario,
+	            u.nombre,
+	            u.sexo,
+	            a.lugar,
+	            a.asistio,
+	            c.id_clase,
+	            c.nombre AS nombre_clase,
+	            c.profesor,
+	            c.horario,
+	            c.hora_inicio,
+	            c.hora_fin,
+	            c.personas,
+	            c.estatus
+	        FROM asistencia_a_clase a
+	        JOIN usuario u ON u.id_usuario = a.id_usuario
+	        JOIN clase c ON c.id_clase = a.id_clase
+	        WHERE a.id_clase = ?
+	          AND a.fecha = ?
+	        ORDER BY CAST(a.lugar AS UNSIGNED) ASC
+	        """;
+
+	    AsistenciaAClase asistenciaClase = new AsistenciaAClase();
+	    List<Usuario> usuarios = new ArrayList<>();
+	    Clase clase = null;
+
+	    try (
+	        Connection conn = Conexion.getConnectionDbPool();
+	        PreparedStatement ps = conn.prepareStatement(sql)
+	    ) {
+
+	        ps.setInt(1, idClase);
+	        ps.setString(2, fecha);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+
+	            while (rs.next()) {
+
+	                // Inicializar clase una sola vez
+	                if (clase == null) {
+	                    clase = new Clase();
+	                    clase.setIdClase(rs.getInt("id_clase"));
+	                    clase.setNombre(rs.getString("nombre_clase"));
+	                    clase.setProfesor(rs.getString("profesor"));
+	                    clase.setHorario(rs.getString("horario"));
+	                    clase.setHoraInicio(rs.getString("hora_inicio"));
+	                    clase.setHoraFin(rs.getString("hora_fin"));
+	                    clase.setPersonas(rs.getString("personas"));
+	                    clase.setEstatus(rs.getString("estatus"));
+
+	                    String horarioTexto = clase.getHorario().equalsIgnoreCase("M") ? "am" : "pm";
+	                    clase.setDescripcionHorario(
+	                        "Clase de " + clase.getHoraInicio() + " " + horarioTexto +
+	                        " a " + clase.getHoraFin() + " " + horarioTexto
+	                    );
+
+	                    asistenciaClase.setClase(clase);
+	                    asistenciaClase.setFecha(fecha);
+	                }
+
+	                Usuario usuario = new Usuario();
+	                usuario.setIdUsuario(rs.getInt("id_usuario"));
+	                usuario.setUsuario(rs.getString("usuario"));
+	                usuario.setNombre(rs.getString("nombre"));
+	                usuario.setSexo(rs.getString("sexo"));
+	                usuario.setLugar(rs.getInt("lugar"));
+	                usuario.setAsistio(rs.getString("asistio"));
+	                usuario.setIniciales(Utilidades.inicialesNombre(rs.getString("nombre")));
+
+	                usuarios.add(usuario);
+	            }
+	        }
+
+	        if (clase != null) {
+	            asistenciaClase.setLugares(
+	                "Lugares " + usuarios.size() + " / " + clase.getPersonas()
+	            );
+	        }
+
+	        asistenciaClase.setUsuarios(usuarios);
+	    }
+
+	    return asistenciaClase;
 	}
 	
 	
@@ -947,9 +1036,7 @@ public class AsistenciaAClaseLogica {
 		boolean salida = false;
 
 		int horaNum = Integer.valueOf(hora);
-		//hora = String.valueOf(horaA);
-		log.info("Hora Actual:" + hora);
-		log.info("Hora Clase:" + horaClase);
+		log.info("Hora Actual:" + hora + "|horaClase:"+horaClase+ "|horario:"+horario);
 		Configuracion conf = ConfiguracionLogica.obtenerConIdentificador("HORAS-PERMITIDAS-CANCELACION");
 		int horasPerVal = Integer.valueOf(conf.getValorAbajo());
 

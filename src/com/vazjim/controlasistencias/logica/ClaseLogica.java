@@ -61,7 +61,7 @@ public class ClaseLogica {
 		
 		if (!where.equals("")) {
 			if (!where.equals(""))
-				where = " WHERE " + where + " ORDER BY c.dia,c.horario,c.hora_inicio";
+				where = " WHERE " + where + " ORDER BY c.dia asc ,c.horario asc ,c.hora_inicio asc ";
 			querySql += where;
 		}
 
@@ -157,7 +157,10 @@ public class ClaseLogica {
 	}
 
 	public List<Clase> obtenerClasesDisponiblesUsuario(String fecha, int sociedad,int idProfesor) throws SQLException {
+		
+		log.info("fecha:"+ fecha);
 
+		
 		Connection conn = Conexion.getConnectionDbPool();
 
 		PreparedStatement st = null;
@@ -172,8 +175,8 @@ public class ClaseLogica {
 		querySql = "SELECT c.id_clase,c.nombre,c.hora_inicio,c.hora_fin,c.horario,c.personas,c.profesor,c.estatus,c.sociedad,c.dia,u.nombre " 
 		+ "FROM clase c "
 		+ "JOIN usuario u ON u.id_usuario = c.profesor "
-		+ "WHERE NOT EXISTS (select a.id_clase from asueto a where a.id_clase = c.id_clase and a.fecha IN (?)) "
-		+ "AND c.estatus = '1' AND c.dia = ? ORDER BY horario ASC,hora_inicio ASC ";
+		+ "WHERE NOT EXISTS (select 1 from asueto a where a.id_clase = c.id_clase and a.fecha = ?) "
+		+ "AND c.estatus = '1' AND c.dia = ? ";
 		
 		if (sociedad != 0 && !"".equals(sociedad)) {
 			if (!querySql.equals(""))
@@ -187,9 +190,10 @@ public class ClaseLogica {
 			querySql += " c.profesor = ? ";
 		}
 		
+		querySql += " ORDER BY horario ASC,hora_inicio ASC ";
 		
 
-	log.info("query: {}", querySql);
+		log.info("query clases: {}", querySql);
 
 		try {
 

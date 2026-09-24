@@ -18,7 +18,6 @@ import jakarta.ws.rs.core.MediaType;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.vazjim.controlasistencias.logica.AsistenciaMultaLogica;
 import com.vazjim.controlasistencias.logica.ConfiguracionLogica;
 import com.vazjim.controlasistencias.logica.InscripcionLogica;
 import com.vazjim.controlasistencias.logica.LogLogica;

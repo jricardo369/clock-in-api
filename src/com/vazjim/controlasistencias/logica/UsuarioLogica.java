@@ -64,7 +64,7 @@ public class UsuarioLogica {
 			querySql += where;
 		}
 
-		System.out.println("query:" + querySql);
+		//System.out.println("query:" + querySql);
 
 		try {
 
@@ -175,6 +175,7 @@ public class UsuarioLogica {
 		querySql = "INSERT INTO usuario(id_rol,usuario,contrasenia,nombre,sexo,correo_electronico,peso,altura,imc,telefono,nivel,estatus,intentos,sociedad) " + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		try {
+			
 			conn.setAutoCommit(false);
 			st = conn.prepareStatement(querySql);
 

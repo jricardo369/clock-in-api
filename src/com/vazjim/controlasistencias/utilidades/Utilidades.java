@@ -13,11 +13,15 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +43,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.vazjim.controlasistencias.logica.AsistenciaMultaLogica;
 import com.vazjim.controlasistencias.logica.ConfiguracionLogica;
 import com.vazjim.controlasistencias.logica.UsuarioLogica;
 import com.vazjim.controlasistencias.modelo.Configuracion;
@@ -168,7 +171,7 @@ public class Utilidades {
 						if (context.equals("")) {
 							field.set(o, 0);
 						} else {
-							field.set(o, new Integer(context));
+							field.set(o, context);
 						}
 
 					}
@@ -186,9 +189,9 @@ public class Utilidades {
 	}
 
 	public static String formatearNumero(String numero) {
-		DecimalFormat formateador = new DecimalFormat("###,###.00");
-		// log.info (formateador.format (numero));
-		return formateador.format(new Double(numero));
+		 DecimalFormat formateador = new DecimalFormat("###,###.00");
+        BigDecimal valor = new BigDecimal(numero);
+        return formateador.format(valor);
 	}
 
 	public static String limpiarCadena(String cadena, boolean limpiarAmperson) {
@@ -207,7 +210,57 @@ public class Utilidades {
 		return c.replaceAll("[^\\dA-Za-z]", "");
 	}
 
+	private static final ZoneId ZONA_MEXICO = ZoneId.of("America/Mexico_City");
+    private static final Locale LOCALE_MEXICO = Locale.forLanguageTag("es-MX");
 	public static String generarFecha(boolean soloFecha, boolean soloHora, boolean dateTime, String replace,
+			int diasASumar, String fechaEntrada) throws ParseException {
+		
+		 // Formatter para fecha y hora
+        DateTimeFormatter fechaFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", LOCALE_MEXICO);
+        DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS", LOCALE_MEXICO);
+
+        LocalDate fechaBase;
+        LocalTime horaActual = LocalTime.now(ZONA_MEXICO);
+
+        // Parsear fechaEntrada si existe
+        if (fechaEntrada != null && !fechaEntrada.isEmpty()) {
+            fechaBase = LocalDate.parse(fechaEntrada, fechaFormatter);
+        } else {
+            fechaBase = LocalDate.now(ZONA_MEXICO);
+        }
+
+        // Sumar días
+        if (diasASumar != 0) {
+            fechaBase = fechaBase.plusDays(diasASumar);
+        }
+
+        // Formatear fecha y hora
+        String fecha = fechaBase.format(fechaFormatter);
+        String hora = horaActual.format(horaFormatter);
+
+        // Construir salida según flags
+        String salida = "";
+        if (soloFecha) {
+            salida = fecha;
+        }
+        if (soloHora) {
+            salida = hora;
+        }
+        if (dateTime) {
+            salida = fecha + "T" + hora + "Z";
+        }
+        if (replace != null && !replace.isEmpty()) {
+            salida = fecha.substring(0, Math.min(10, fecha.length())).replace(replace, "");
+        }
+
+        // Log de hora (opcional)
+        //System.out.println("Hora obt: " + hora);
+
+        return salida;
+		
+	}
+	
+	/*public static String generarFechaAnterior(boolean soloFecha, boolean soloHora, boolean dateTime, String replace,
 			int diasASumar, String fechaEntrada) throws ParseException {
 		Date d = new Date();
 		String fecha = "";
@@ -264,9 +317,9 @@ public class Utilidades {
 		}
 
 		return salida;
-	}
+	}*/
 
-	public static boolean esFinDeSemana(String fecha) {
+	/*public static boolean esFinDeSemana(String fecha) {
 		// log.info("Fecha:" + fecha);
 		boolean salida = false;
 		try {
@@ -289,9 +342,29 @@ public class Utilidades {
 		}
 
 		return salida;
-	}
+	}*/
+	
+	public static boolean esFinDeSemana(String fecha) {
+        try {
+            // Formatter moderno para parsear la fecha
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.forLanguageTag("es-MX"));
 
-	public static String diaSemana(String fecha) {
+            // Parsear la fecha a LocalDate
+            LocalDate localDate = LocalDate.parse(fecha, formatter);
+
+            // Obtener el día de la semana
+            DayOfWeek diaSemana = localDate.getDayOfWeek();
+
+            // Verificar si es sábado o domingo
+            return diaSemana == DayOfWeek.SATURDAY || diaSemana == DayOfWeek.SUNDAY;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; // si hay error de parseo, se devuelve false
+        }
+    }
+
+	/*public static String diaSemana(String fecha) {
 		log.info("Fecha:" + fecha);
 		String salida = "";
 		try {
@@ -330,9 +403,41 @@ public class Utilidades {
 		}
 
 		return salida;
-	}
+	}*/
+	
+	public static String diaSemana(String fecha) {
+        System.out.println("Fecha: " + fecha); // log.info
 
-	public static String fechaEnLetra(String fecha) {
+        try {
+            // Formatter moderno
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.forLanguageTag("es-MX"));
+
+            // Parsear la fecha a LocalDate
+            LocalDate localDate = LocalDate.parse(fecha, formatter);
+
+            // Obtener el día de la semana
+            DayOfWeek diaSemana = localDate.getDayOfWeek();
+            System.out.println("Día: " + diaSemana.getValue()); // lunes=1 ... domingo=7
+
+            // Convertir a nombre en mayúsculas en español
+            switch (diaSemana) {
+                case MONDAY: return "LUNES";
+                case TUESDAY: return "MARTES";
+                case WEDNESDAY: return "MIERCOLES";
+                case THURSDAY: return "JUEVES";
+                case FRIDAY: return "VIERNES";
+                case SATURDAY: return "SABADO";
+                case SUNDAY: return "DOMINGO";
+                default: return "";
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+	/*public static String fechaEnLetra(String fecha) {
 		//log.info("Fecha:" + fecha);
 		String dia = "";
 		String salida = "";
@@ -418,9 +523,45 @@ public class Utilidades {
 		}
 
 		return salida;
-	}
+	}*/
 	
-	public static String fechaActual() {
+	public static String fechaEnLetra(String fecha) {
+        try {
+            // Locale para español México
+            Locale mexicoLocale = Locale.forLanguageTag("es-MX");
+
+            // Parsear la fecha
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", mexicoLocale);
+            LocalDate localDate = LocalDate.parse(fecha, formatter);
+
+            // Obtener día de la semana en español
+            String dia = localDate.getDayOfWeek().getDisplayName(TextStyle.FULL, mexicoLocale);
+
+            // Obtener mes en español
+            String mes = localDate.getMonth().getDisplayName(TextStyle.FULL, mexicoLocale);
+
+            // Construir salida: "Lunes 05 de Enero del 2026"
+            String salida = String.format("%s %02d de %s del %d",
+                    capitalize(dia),
+                    localDate.getDayOfMonth(),
+                    capitalize(mes),
+                    localDate.getYear());
+
+            return salida;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    // Método auxiliar para capitalizar la primera letra
+    private static String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0,1).toUpperCase() + str.substring(1);
+    }
+	
+	/*public static String fechaActual() {
 		
 		Date todayDate = new Date();
 		String pattern = "yyyy-MM-dd";
@@ -440,9 +581,34 @@ public class Utilidades {
 			e.printStackTrace();
 		}
 		return date;
-	}
+	}*/
+    
+    public static String fechaActual() {
+        Locale mexicoLocale = Locale.forLanguageTag("es-MX");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", mexicoLocale);
+        LocalDate today = LocalDate.now(); // fecha actual
+        return today.format(formatter);
+    }
+    
+    public static Date cadenaToDate(String f) {
+        try {
+            // Locale para español México
+            Locale mexicoLocale = Locale.forLanguageTag("es-MX");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", mexicoLocale);
 
-	public static int compararFechaActualVsFecha(String fecha2) {
+            // Parsear a LocalDate
+            LocalDate localDate = LocalDate.parse(f, formatter);
+
+            // Convertir a java.util.Date
+            return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+	/*public static int compararFechaActualVsFecha(String fecha2) {
 		String fechaActual = "";
 		Date fechaAct = null;
 		Date fechaComp = null;
@@ -469,7 +635,41 @@ public class Utilidades {
 			log.info("La fecha recibida es menor que la fecha actual");
 		}
 		return salida;
-	}
+	}*/
+    
+    public static int compararFechaActualVsFecha(String fecha2) {
+        try {
+            // Locale y formatter
+            Locale mexicoLocale = Locale.forLanguageTag("es-MX");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", mexicoLocale);
+
+            // Fecha actual en formato LocalDate
+            LocalDate fechaAct = LocalDate.now(ZoneId.systemDefault());
+
+            // Fecha a comparar
+            LocalDate fechaComp = LocalDate.parse(fecha2, formatter);
+
+            // Comparar
+            int salida = fechaComp.compareTo(fechaAct);
+
+            log.info("fecha recibida: " + fecha2);
+            log.info("fecha actual: " + fechaAct.format(formatter));
+
+            if (salida == 0) {
+                log.info("Fechas iguales");
+            } else if (salida > 0) {
+                log.info("La fecha recibida es mayor que la fecha actual");
+            } else {
+                log.info("La fecha recibida es menor que la fecha actual");
+            }
+
+            return salida;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0; // si hay error, se devuelve 0
+        }
+    }
 
 	public static String completaCeros(String valor, int total) {
 		String ceros = "";
@@ -588,7 +788,7 @@ public class Utilidades {
 		return salida;
 	}
 
-	public static String sumarDiasAFechas(String fecha, int dias) {
+	/*public static String sumarDiasAFechas(String fecha, int dias) {
 		String salida = "";
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",new Locale("es", "MX"));
@@ -600,7 +800,27 @@ public class Utilidades {
 			e.printStackTrace();
 		}
 		return salida;
-	}
+	}*/
+	
+	public static String sumarDiasAFechas(String fecha, int dias) {
+        try {
+            Locale mexicoLocale = Locale.forLanguageTag("es-MX");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", mexicoLocale);
+
+            // Parsear la fecha
+            LocalDate localDate = LocalDate.parse(fecha, formatter);
+
+            // Sumar días
+            LocalDate nuevaFecha = localDate.plusDays(dias);
+
+            // Formatear salida
+            return nuevaFecha.format(formatter);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 
 	public static List<String> obtenerTodosLosDiasDelAniooAPartirDeFecha(String fecha, int dias) {
 		List<String> list = new ArrayList<>();
@@ -698,24 +918,6 @@ public class Utilidades {
 		return salida;
 	}
 
-	public static void main(String[] args) {
-		/*String regex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,11}$";
-
-		boolean salida = true;
-		if (!Pattern.matches(regex, "Inicio20.")) {
-			salida = false;
-		}
-		
-		System.out.println("salida:"+salida);
-	
-		try {
-			Utilidades.leerXlsx("/Users/joser.vazquez/Downloads/UsuariosIRodaDTest.xlsx");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		System.out.println(fechaActual());
-	}
 	
 	@SuppressWarnings("deprecation")
 	public static void leerXlsx(String ruta) throws IOException {
@@ -842,6 +1044,36 @@ public class Utilidades {
 		System.out.println(noOfDaysBetween);
 		salida = (int) noOfDaysBetween;
 		return salida;
+	}
+	
+	
+	public static void main(String[] args) {
+
+		String resultado = formatearNumero("1234567.89");
+		System.out.println(resultado); // 1,234,567.89
+
+		System.out.println(esFinDeSemana("2026-01-05")); // lunes → false
+		System.out.println(esFinDeSemana("2026-01-03")); // sábado → true
+		System.out.println(esFinDeSemana("2026-01-04")); // domingo → true
+		
+		System.out.println(diaSemana("2026-01-05")); // LUNES
+        System.out.println(diaSemana("2026-01-03")); // SABADO
+        System.out.println(diaSemana("2026-01-04")); // DOMINGO
+        
+        System.out.println(fechaEnLetra("2026-01-05")); // Lunes 05 de Enero del 2026
+        System.out.println(fechaEnLetra("2026-08-15")); // Sábado 15 de Agosto del 2026
+        
+        System.out.println(fechaActual()); // ejemplo: 2026-01-05
+        
+        Date fecha = cadenaToDate("2026-01-05");
+        System.out.println(fecha); // Tue Jan 05 00:00:00 CET 2026 (dependerá de tu zona)
+        
+        int resultado2 = compararFechaActualVsFecha("2026-01-05");
+        System.out.println("Resultado: " + resultado2);
+        
+        System.out.println(sumarDiasAFechas("2026-01-05", 3)); // 2026-01-08
+        System.out.println(sumarDiasAFechas("2026-01-05", -2)); // 2026-01-03
+		 
 	}
 
 }
